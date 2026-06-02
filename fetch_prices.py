@@ -215,6 +215,7 @@ def build_dataset(all_rows):
     カラー差は同一機種内の最高値を採用(各店の代表値)。
     """
     grouped = {}
+    color_grouped = {}   # (model, capacity, color) -> {shop: price}
     for row in all_rows:
         key = (row["model"], row["capacity"])
         if key not in TARGETS:
@@ -224,6 +225,13 @@ def build_dataset(all_rows):
         cur = grouped[key][shop]
         if cur is None or row["price"] > cur:
             grouped[key][shop] = row["price"]
+        # ---- カラー別 ----
+        color = (row.get("color") or "").strip() or "（色指定なし）"
+        ckey = (row["model"], row["capacity"], color)
+        color_grouped.setdefault(ckey, {"ルデヤ": None, "森森": None})
+        ccur = color_grouped[ckey][shop]
+        if ccur is None or row["price"] > ccur:
+            color_grouped[ckey][shop] = row["price"]
 
     items = []
     for (model, cap), shops in grouped.items():
@@ -234,6 +242,26 @@ def build_dataset(all_rows):
         if best is not None:
             best_shop = [k for k, v in shop_prices.items() if v == best][0]
         diff = (best - list_price) if (best is not None and list_price) else None
+
+        # ---- カラー別の内訳を組み立て ----
+        colors = []
+        for (m, c, color), cshops in color_grouped.items():
+            if m != model or c != cap:
+                continue
+            cprices = {k: v for k, v in cshops.items() if v is not None}
+            cbest = max(cprices.values()) if cprices else None
+            cbest_shop = ([k for k, v in cprices.items() if v == cbest][0]
+                          if cbest is not None else None)
+            cdiff = (cbest - list_price) if (cbest is not None and list_price) else None
+            colors.append({
+                "color": color,
+                "shops": cshops,          # {"ルデヤ":x,"森森":y}
+                "best_price": cbest,
+                "best_shop": cbest_shop,
+                "diff": cdiff,
+            })
+        colors.sort(key=lambda x: -(x["best_price"] or 0))
+
         items.append({
             "model": model,
             "capacity": cap,
@@ -242,6 +270,7 @@ def build_dataset(all_rows):
             "best_price": best,
             "best_shop": best_shop,
             "diff": diff,             # 買取最高値 - 定価 (マイナスなら定価割れ)
+            "colors": colors,         # カラー別内訳
         })
 
     # モデル→容量の表示順

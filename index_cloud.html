@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>iPhone 買取価格比較</title>
+<style>
+  :root{
+    --bg:#0a0a0b; --card:#16161a; --card2:#1d1d22; --line:#2a2a30;
+    --gold:#e8c87a; --gold-dim:#a8915a; --text:#f2f2f4; --sub:#8a8a92;
+    --green:#4ade80; --red:#f87171; --blue:#7dd3fc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{padding:0 0 40px;max-width:560px;margin:0 auto}
+
+  /* ヘッダー */
+  .head{padding:28px 20px 18px;position:sticky;top:0;background:linear-gradient(180deg,#0a0a0b 70%,transparent);z-index:30}
+  .kicker{font-size:11px;letter-spacing:.35em;color:var(--gold-dim);font-weight:600}
+  .title{font-size:27px;font-weight:800;margin-top:4px;letter-spacing:.02em}
+  .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .refresh{flex:0 0 auto;margin-top:4px;padding:9px 16px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#f0d590,#cba94e);color:#1a1505;font-size:13px;
+    font-weight:700;cursor:pointer;transition:.15s}
+  .refresh:active{transform:scale(.96)}
+  .refresh:disabled{opacity:.5}
+  .updated{font-size:12px;color:var(--sub);margin-top:8px;display:flex;align-items:center;gap:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+
+  /* 機種選択タブ */
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 20px 14px;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;padding:9px 16px;border-radius:999px;background:var(--card);
+    border:1px solid var(--line);color:var(--sub);font-size:13px;font-weight:600;
+    white-space:nowrap;transition:.15s;cursor:pointer}
+  .tab.on{background:linear-gradient(135deg,#f0d590,#cba94e);color:#1a1505;border-color:transparent}
+
+  /* 容量チップ */
+  .caps{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 16px}
+  .cap{padding:7px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);
+    color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .cap.on{background:var(--card2);color:var(--gold);border-color:var(--gold-dim)}
+
+  /* メイン価格カード */
+  .main{margin:0 16px 16px;border-radius:20px;overflow:hidden;
+    background:radial-gradient(120% 120% at 0% 0%,#211d12 0%,#16161a 55%);
+    border:1px solid #3a3320}
+  .main .top{padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+  .m-name{font-size:19px;font-weight:700}
+  .m-cap{font-size:13px;color:var(--sub);margin-top:2px}
+  .best-row{display:flex;align-items:flex-end;justify-content:space-between;padding:18px 20px 8px}
+  .best-label{font-size:12px;color:var(--gold-dim);letter-spacing:.05em}
+  .best-val{font-size:40px;font-weight:800;color:var(--gold);line-height:1;margin-top:6px;letter-spacing:-.02em}
+  .best-shop{font-size:13px;color:var(--sub);margin-top:8px}
+  .best-shop b{color:var(--text)}
+
+  /* 定価・差額 */
+  .metrics{display:flex;gap:10px;padding:8px 20px 20px}
+  .metric{flex:1;background:var(--card2);border-radius:12px;padding:12px 14px}
+  .metric .l{font-size:11px;color:var(--sub)}
+  .metric .v{font-size:18px;font-weight:700;margin-top:3px}
+  .v.plus{color:var(--green)} .v.minus{color:var(--red)}
+
+  /* 店舗一覧 */
+  .shops{margin:0 16px 22px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .shop{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 12px;text-align:center}
+  .shop.best{border-color:var(--gold-dim);background:var(--card2)}
+  .shop .nm{font-size:13px;color:var(--sub);font-weight:600}
+  .shop .pr{font-size:19px;font-weight:800;margin-top:6px}
+  .shop .na{font-size:13px;color:#55555c;margin-top:6px}
+  .shop .crown{font-size:11px;color:var(--gold);margin-top:4px}
+
+  /* グラフ */
+  .chart-wrap{margin:0 16px 20px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 14px 10px}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 4px}
+  .chart-title{font-size:14px;font-weight:700}
+  .legend{display:flex;gap:12px;font-size:11px;color:var(--sub)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle}
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  .gl{stroke:var(--line);stroke-width:1}
+  .axis-y{fill:var(--sub);font-size:10px}
+  .axis-x{fill:var(--sub);font-size:9px}
+
+  .err{padding:40px 24px;text-align:center;color:var(--sub);font-size:14px;line-height:1.7}
+  .err code{background:var(--card2);padding:2px 7px;border-radius:5px;color:var(--gold);font-size:12px}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="kicker">LIVE BUYBACK PRICES</div>
+    <div class="title-row">
+      <div class="title">iPhone 買取価格比較</div>
+      <button id="refresh" class="refresh">再読込</button>
+    </div>
+    <div class="updated"><span class="dot"></span><span id="updated">読み込み中…</span></div>
+  </div>
+
+  <div id="app"></div>
+
+<script>
+const SHOP_COLORS = { "ルデヤ":"#e8c87a", "森森":"#7dd3fc" };
+const yen = n => n==null ? "—" : "¥"+n.toLocaleString();
+
+let DATA=null, HIST=null, selModel=null, selCap=null;
+
+async function load(keepSel){
+  try{
+    const bust = "?t=" + Date.now();   // キャッシュ回避: 開くたび最新を取得
+    const [p,h] = await Promise.all([
+      fetch("data/prices.json"+bust, {cache:"no-store"}).then(r=>r.json()),
+      fetch("data/history.json"+bust, {cache:"no-store"}).then(r=>r.json()).catch(()=> ({}))
+    ]);
+    DATA=p; HIST=h||{};
+    document.getElementById("updated").textContent = "最終更新 "+DATA.updated_at;
+    if(!keepSel || !current()){
+      const first = DATA.items[0];
+      selModel=first.model; selCap=first.capacity;
+    }
+    render();
+  }catch(e){
+    document.getElementById("app").innerHTML =
+      `<div class="err">データを読み込めませんでした。<br><br>
+      価格データの取得待ちです。<br>
+      GitHub Actions の初回実行が完了すると表示されます。<br>
+      (Actionsタブで実行状況を確認できます)</div>`;
+  }
+}
+
+function models(){ return [...new Set(DATA.items.map(i=>i.model))]; }
+function capsOf(m){ return DATA.items.filter(i=>i.model===m).map(i=>i.capacity); }
+function current(){ return DATA.items.find(i=>i.model===selModel && i.capacity===selCap); }
+
+function render(){
+  const it = current();
+  const app = document.getElementById("app");
+  const shops = ["ルデヤ","森森"];
+
+  // diff 表示
+  let diffHtml = "—", diffCls="";
+  if(it.diff!=null){
+    const sign = it.diff>=0 ? "+" : "−";
+    diffCls = it.diff>=0 ? "plus":"minus";
+    diffHtml = sign+"¥"+Math.abs(it.diff).toLocaleString();
+  }
+
+  app.innerHTML = `
+    <div class="tabs">
+      ${models().map(m=>`<div class="tab ${m===selModel?'on':''}" data-m="${m}">${m.replace('iPhone ','')}</div>`).join("")}
+    </div>
+    <div class="caps">
+      ${capsOf(selModel).map(c=>`<div class="cap ${c===selCap?'on':''}" data-c="${c}">${c}</div>`).join("")}
+    </div>
+
+    <div class="main">
+      <div class="top">
+        <div class="m-name">${it.model}</div>
+        <div class="m-cap">${it.capacity}・SIMフリー / 新品未開封</div>
+      </div>
+      <div class="best-row">
+        <div>
+          <div class="best-label">最高買取価格</div>
+          <div class="best-val">${yen(it.best_price)}</div>
+          <div class="best-shop">by <b>${it.best_shop||"—"}</b></div>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="l">Apple 定価(税込)</div><div class="v">${yen(it.list_price)}</div></div>
+        <div class="metric"><div class="l">定価との差額</div><div class="v ${diffCls}">${diffHtml}</div></div>
+      </div>
+    </div>
+
+    <div class="shops">
+      ${(()=>{ let crowned=false; return shops.map(s=>{
+        const v=it.shops[s]; const isBest = v!=null && v===it.best_price && !crowned;
+        if(isBest) crowned=true;
+        return `<div class="shop ${isBest?'best':''}">
+          <div class="nm">${s}</div>
+          ${v!=null?`<div class="pr">${yen(v)}</div>`:`<div class="na">取扱なし</div>`}
+          ${isBest?`<div class="crown">★ 最高値</div>`:``}
+        </div>`;
+      }).join(""); })()}
+    </div>
+
+    ${renderChart(it)}
+  `;
+
+  // イベント
+  app.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+    selModel=t.dataset.m;
+    const caps=capsOf(selModel);
+    if(!caps.includes(selCap)) selCap=caps[0];
+    render();
+  });
+  app.querySelectorAll(".cap").forEach(c=>c.onclick=()=>{ selCap=c.dataset.c; render(); });
+}
+
+function renderChart(it){
+  const key = `${it.model}|${it.capacity}`;
+  const recs = (HIST[key]||[]).filter(r=>r.best!=null);
+  if(recs.length<2){
+    return `<div class="chart-wrap"><div class="chart-head"><div class="chart-title">買取価格の推移</div></div>
+      <div style="padding:24px 4px;color:var(--sub);font-size:13px;text-align:center">
+      履歴がまだ十分にありません。毎日 <code style="color:var(--gold)">fetch_prices.py</code> を実行すると推移が蓄積されます。</div></div>`;
+  }
+  const W=480, H=200, padL=46, padR=12, padT=14, padB=26;
+  const shops=["ルデヤ","森森"];
+  const all=[];
+  recs.forEach(r=>shops.forEach(s=>{ if(r[s]!=null) all.push(r[s]); }));
+  let min=Math.min(...all), max=Math.max(...all);
+  const span=(max-min)||1; min-=span*0.12; max+=span*0.12;
+  const x=i=> padL + (W-padL-padR)*(i/(recs.length-1));
+  const y=v=> padT + (H-padT-padB)*(1-(v-min)/(max-min));
+
+  // Y軸グリッド(4本)
+  let grid="";
+  for(let g=0;g<=3;g++){
+    const val=min+(max-min)*g/3, yy=y(val);
+    grid+=`<line class="gl" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>
+      <text class="axis-y" x="${padL-6}" y="${yy+3}" text-anchor="end">${Math.round(val/1000)}k</text>`;
+  }
+  // X軸ラベル(両端+中央)
+  let xlab="";
+  [0, Math.floor((recs.length-1)/2), recs.length-1].forEach(i=>{
+    const d=recs[i].date.slice(5);
+    xlab+=`<text class="axis-x" x="${x(i)}" y="${H-8}" text-anchor="middle">${d}</text>`;
+  });
+  // 各店ライン
+  let lines="";
+  shops.forEach(s=>{
+    const pts=recs.map((r,i)=> r[s]!=null?`${x(i)},${y(r[s])}`:null).filter(Boolean);
+    if(pts.length<2) return;
+    lines+=`<polyline fill="none" stroke="${SHOP_COLORS[s]}" stroke-width="2"
+       stroke-linejoin="round" stroke-linecap="round" points="${pts.join(" ")}" opacity="0.95"/>`;
+    // 最終点
+    const last=recs[recs.length-1];
+    if(last[s]!=null) lines+=`<circle cx="${x(recs.length-1)}" cy="${y(last[s])}" r="3" fill="${SHOP_COLORS[s]}"/>`;
+  });
+
+  return `<div class="chart-wrap">
+    <div class="chart-head">
+      <div class="chart-title">買取価格の推移（${recs.length}日）</div>
+      <div class="legend">
+        ${shops.map(s=>`<span><i style="background:${SHOP_COLORS[s]}"></i>${s}</span>`).join("")}
+      </div>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      ${grid}${lines}${xlab}
+    </svg>
+  </div>`;
+}
+
+// 「再読込」: 公開中の最新JSONを取り直す(取得はGitHub Actionsが1日数回自動実行)
+document.getElementById("refresh").onclick = async (e)=>{
+  const btn = e.target;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "読込中…";
+  await load(true);
+  btn.disabled = false; btn.textContent = orig;
+};
+
+load();
+</script>
+</body>
+</html>

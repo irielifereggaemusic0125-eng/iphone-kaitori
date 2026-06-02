@@ -1,0 +1,33 @@
+{
+  "updated_at": "2026-06-02 20:14",
+  "source": [
+    "ルデヤ",
+    "森森"
+  ],
+  "items": [
+    {
+      "model": "iPhone 17 Pro Max",
+      "capacity": "256GB",
+      "list_price": 194800,
+      "shops": {
+        "ルデヤ": 194500,
+        "森森": 194000
+      },
+      "best_price": 194500,
+      "best_shop": "ルデヤ",
+      "diff": -300
+    },
+    {
+      "model": "iPhone 17 Pro",
+      "capacity": "256GB",
+      "list_price": 179800,
+      "shops": {
+        "ルデヤ": 179500,
+        "森森": 179000
+      },
+      "best_price": 179500,
+      "best_shop": "ルデヤ",
+      "diff": -300
+    }
+  ]
+}

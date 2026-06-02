@@ -1,0 +1,67 @@
+name: Fetch iPhone Buyback Prices
+
+on:
+  schedule:
+    # 1日4回(JST 7時/12時/18時/22時 = UTC 22/3/9/13時)に自動取得
+    - cron: '0 22 * * *'
+    - cron: '0 3 * * *'
+    - cron: '0 9 * * *'
+    - cron: '0 13 * * *'
+  workflow_dispatch:   # 手動実行ボタンも有効化
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  fetch-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v4
+
+      - name: Python をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 依存ライブラリをインストール
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: 価格を取得 (data/*.json を更新)
+        run: python fetch_prices.py
+
+      - name: 履歴をリポジトリにコミット (推移を蓄積)
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/prices.json data/history.json
+          git commit -m "update prices $(date -u +%Y-%m-%dT%H:%MZ)" || echo "変更なし"
+          git push || echo "push不要"
+
+      - name: 公開用フォルダを準備
+        run: |
+          mkdir -p _site
+          cp index_cloud.html _site/index.html
+          cp -r data _site/data
+
+      - name: Pages 用にアップロード
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: fetch-and-publish
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages へ公開
+        id: deployment
+        uses: actions/deploy-pages@v4

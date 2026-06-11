@@ -1,8 +1,97 @@
 {
-  "updated_at": "2026-06-11 06:30",
+  "updated_at": "2026-06-11 18:28",
   "source": [
     "ルデヤ",
     "森森"
   ],
-  "items": []
+  "items": [
+    {
+      "model": "iPhone 17 Pro Max",
+      "capacity": "256GB",
+      "list_price": 194800,
+      "shops": {
+        "ルデヤ": null,
+        "森森": 187000
+      },
+      "best_price": 187000,
+      "best_shop": "森森",
+      "diff": -7800,
+      "colors": [
+        {
+          "color": "シルバー",
+          "shops": {
+            "ルデヤ": null,
+            "森森": 187000
+          },
+          "best_price": 187000,
+          "best_shop": "森森",
+          "diff": -7800
+        },
+        {
+          "color": "ディープブルー",
+          "shops": {
+            "ルデヤ": null,
+            "森森": 186000
+          },
+          "best_price": 186000,
+          "best_shop": "森森",
+          "diff": -8800
+        },
+        {
+          "color": "コズミックオレンジ",
+          "shops": {
+            "ルデヤ": null,
+            "森森": 185000
+          },
+          "best_price": 185000,
+          "best_shop": "森森",
+          "diff": -9800
+        }
+      ]
+    },
+    {
+      "model": "iPhone 17 Pro",
+      "capacity": "256GB",
+      "list_price": 179800,
+      "shops": {
+        "ルデヤ": null,
+        "森森": 173000
+      },
+      "best_price": 173000,
+      "best_shop": "森森",
+      "diff": -6800,
+      "colors": [
+        {
+          "color": "シルバー",
+          "shops": {
+            "ルデヤ": null,
+            "森森": 173000
+          },
+          "best_price": 173000,
+          "best_shop": "森森",
+          "diff": -6800
+        },
+        {
+          "color": "ディープブルー",
+          "shops": {
+            "ルデヤ": null,
+            "森森": 172000
+          },
+          "best_price": 172000,
+          "best_shop": "森森",
+          "diff": -7800
+        },
+        {
+          "color": "コズミックオレンジ",
+          "shops": {
+            "ルデヤ": null,
+            "森森": 172000
+          },
+          "best_price": 172000,
+          "best_shop": "森森",
+          "diff": -7800
+        }
+      ]
+    }
+  ]
 }

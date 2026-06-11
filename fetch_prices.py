@@ -101,27 +101,31 @@ def fetch_rudeya():
             r = requests.get(url, headers=UA, timeout=TIMEOUT)
             r.raise_for_status()
             soup = BeautifulSoup(r.text, "lxml")
-            for row in soup.select("div.tr"):
-                cells = [c.get_text("", strip=True) for c in row.select("div.td")]
-                txt = " ".join(cells)
-                if "iPhone" not in txt:
+            for card in soup.select("article.pgrid-card"):
+                name_el = card.select_one("a.product-card-name-link")
+                price_el = card.select_one("span.product-card-price-value")
+                if not name_el or not price_el:
+                    continue
+                txt = name_el.get_text(" ", strip=True)
+                # 新品/未開封のみ対象
+                cond_el = card.select_one("span.product-card-cond-badge")
+                cond = (cond_el.get_text(strip=True) if cond_el else "")
+                if "新品" not in cond and "未開封" not in txt:
                     continue
                 cap = normalize_capacity(txt)
                 if not cap:
                     continue
                 color = normalize_color(txt)
-                # 価格: 「円」付きカンマ区切り or 末尾円。JANコード(13桁)は除外
-                price_cands = re.findall(r"([\d]{1,3}(?:,[\d]{3})+)\s*円", txt)
-                prices = [to_int(p) for p in price_cands]
-                prices = [p for p in prices if p and 10000 < p < 1000000]
-                if not prices:
+                price_txt = price_el.get_text(" ", strip=True)
+                price = to_int(price_txt)
+                if not price or price < 10000:
                     continue
                 results.append({
                     "shop": "ルデヤ",
                     "model": model,
                     "capacity": cap,
                     "color": color,
-                    "price": max(prices),
+                    "price": price,
                 })
         except Exception as e:
             print(f"[ルデヤ] {model} 取得失敗: {e}")

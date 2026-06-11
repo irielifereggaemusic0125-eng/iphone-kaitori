@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-11 18:28",
+  "updated_at": "2026-06-12 05:43",
   "source": [
     "ルデヤ",
     "森森"
@@ -10,41 +10,41 @@
       "capacity": "256GB",
       "list_price": 194800,
       "shops": {
-        "ルデヤ": null,
+        "ルデヤ": 187000,
         "森森": 187000
       },
       "best_price": 187000,
-      "best_shop": "森森",
+      "best_shop": "ルデヤ",
       "diff": -7800,
       "colors": [
         {
           "color": "シルバー",
           "shops": {
-            "ルデヤ": null,
+            "ルデヤ": 187000,
             "森森": 187000
           },
           "best_price": 187000,
-          "best_shop": "森森",
+          "best_shop": "ルデヤ",
           "diff": -7800
         },
         {
           "color": "ディープブルー",
           "shops": {
-            "ルデヤ": null,
+            "ルデヤ": 186000,
             "森森": 186000
           },
           "best_price": 186000,
-          "best_shop": "森森",
+          "best_shop": "ルデヤ",
           "diff": -8800
         },
         {
           "color": "コズミックオレンジ",
           "shops": {
-            "ルデヤ": null,
+            "ルデヤ": 185000,
             "森森": 185000
           },
           "best_price": 185000,
-          "best_shop": "森森",
+          "best_shop": "ルデヤ",
           "diff": -9800
         }
       ]
@@ -54,41 +54,41 @@
       "capacity": "256GB",
       "list_price": 179800,
       "shops": {
-        "ルデヤ": null,
+        "ルデヤ": 173000,
         "森森": 173000
       },
       "best_price": 173000,
-      "best_shop": "森森",
+      "best_shop": "ルデヤ",
       "diff": -6800,
       "colors": [
         {
           "color": "シルバー",
           "shops": {
-            "ルデヤ": null,
+            "ルデヤ": 173000,
             "森森": 173000
           },
           "best_price": 173000,
-          "best_shop": "森森",
+          "best_shop": "ルデヤ",
           "diff": -6800
         },
         {
           "color": "ディープブルー",
           "shops": {
-            "ルデヤ": null,
+            "ルデヤ": 172000,
             "森森": 172000
           },
           "best_price": 172000,
-          "best_shop": "森森",
+          "best_shop": "ルデヤ",
           "diff": -7800
         },
         {
           "color": "コズミックオレンジ",
           "shops": {
-            "ルデヤ": null,
+            "ルデヤ": 172000,
             "森森": 172000
           },
           "best_price": 172000,
-          "best_shop": "森森",
+          "best_shop": "ルデヤ",
           "diff": -7800
         }
       ]

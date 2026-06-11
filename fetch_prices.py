@@ -295,15 +295,38 @@ def main():
 
     items = build_dataset(rows)
 
+    # ----- 0件フェイルセーフ -----
+    # CI(GitHub Actions)環境では買取サイトがdatacenter IPをブロックし全shop 0件になることがある。
+    # その場合に空itemsで上書きデプロイすると表示アプリが死ぬため、既存の前回データを保持する。
+    prices_path = os.path.join(DATA_DIR, "prices.json")
+    stale = False
+    if not items and os.path.exists(prices_path):
+        try:
+            with open(prices_path, encoding="utf-8") as f:
+                prev = json.load(f)
+            if prev.get("items"):
+                items = prev["items"]
+                stale = True
+                print(f"⚠️ 今回0件 → 前回データ({prev.get('updated_at')}・{len(items)}機種)を保持")
+        except Exception:
+            pass
+
     dataset = {
         "updated_at": ts,
         "source": ["ルデヤ", "森森"],
         "items": items,
     }
-    with open(os.path.join(DATA_DIR, "prices.json"), "w", encoding="utf-8") as f:
+    if stale:
+        dataset["stale"] = True
+        dataset["note"] = "今回の取得が0件のため前回データを表示中"
+    with open(prices_path, "w", encoding="utf-8") as f:
         json.dump(dataset, f, ensure_ascii=False, indent=2)
 
     # ----- 履歴(推移)を追記 -----
+    if stale:
+        print("（stale=前回値保持のため履歴追記はスキップ）")
+        print(f"=== 完了: {len(items)}機種を出力(前回値) ===")
+        return
     hist_path = os.path.join(DATA_DIR, "history.json")
     if os.path.exists(hist_path):
         with open(hist_path, encoding="utf-8") as f:

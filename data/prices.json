@@ -1,10 +1,118 @@
 {
-  "updated_at": "2026-09-21 17:27",
+  "updated_at": "2026-09-21 20:45",
   "source": [
     "ルデヤ",
     "森森"
   ],
   "items": [
+    {
+      "model": "iPhone 18 Pro Max",
+      "capacity": "256GB",
+      "list_price": 239800,
+      "shops": {
+        "ルデヤ": 266000,
+        "森森": 266000
+      },
+      "best_price": 266000,
+      "best_shop": "ルデヤ",
+      "diff": 26200,
+      "colors": [
+        {
+          "color": "グレイシャー",
+          "shops": {
+            "ルデヤ": 266000,
+            "森森": 266000
+          },
+          "best_price": 266000,
+          "best_shop": "ルデヤ",
+          "diff": 26200
+        },
+        {
+          "color": "ブラック",
+          "shops": {
+            "ルデヤ": 266000,
+            "森森": 266000
+          },
+          "best_price": 266000,
+          "best_shop": "ルデヤ",
+          "diff": 26200
+        },
+        {
+          "color": "バーガンディ",
+          "shops": {
+            "ルデヤ": 266000,
+            "森森": 266000
+          },
+          "best_price": 266000,
+          "best_shop": "ルデヤ",
+          "diff": 26200
+        },
+        {
+          "color": "シルバー",
+          "shops": {
+            "ルデヤ": 266000,
+            "森森": 266000
+          },
+          "best_price": 266000,
+          "best_shop": "ルデヤ",
+          "diff": 26200
+        }
+      ]
+    },
+    {
+      "model": "iPhone 18 Pro",
+      "capacity": "256GB",
+      "list_price": 219800,
+      "shops": {
+        "ルデヤ": 215000,
+        "森森": 215000
+      },
+      "best_price": 215000,
+      "best_shop": "ルデヤ",
+      "diff": -4800,
+      "colors": [
+        {
+          "color": "グレイシャー",
+          "shops": {
+            "ルデヤ": 215000,
+            "森森": 215000
+          },
+          "best_price": 215000,
+          "best_shop": "ルデヤ",
+          "diff": -4800
+        },
+        {
+          "color": "ブラック",
+          "shops": {
+            "ルデヤ": 215000,
+            "森森": 215000
+          },
+          "best_price": 215000,
+          "best_shop": "ルデヤ",
+          "diff": -4800
+        },
+        {
+          "color": "バーガンディ",
+          "shops": {
+            "ルデヤ": 215000,
+            "森森": 215000
+          },
+          "best_price": 215000,
+          "best_shop": "ルデヤ",
+          "diff": -4800
+        },
+        {
+          "color": "シルバー",
+          "shops": {
+            "ルデヤ": 215000,
+            "森森": 215000
+          },
+          "best_price": 215000,
+          "best_shop": "ルデヤ",
+          "diff": -4800
+        }
+      ]
+    },
     {
       "model": "iPhone 17 Pro Max",
       "capacity": "256GB",

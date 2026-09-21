@@ -29,9 +29,19 @@ UA = {
 TIMEOUT = 25
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
-# ===== Apple 定価(税込・SIMフリー) 2025年9月発売時点 =====
+# ===== Apple 定価(税込・SIMフリー) =====
 # キー: (model, capacity)
 LIST_PRICES = {
+    # iPhone 18 (2026-09-18 発売)
+    ("iPhone 18 Pro Max", "256GB"): 239800,
+    ("iPhone 18 Pro Max", "512GB"): 274800,
+    ("iPhone 18 Pro Max", "1TB"):   344800,
+    ("iPhone 18 Pro Max", "2TB"):   449800,
+    ("iPhone 18 Pro", "256GB"):     219800,
+    ("iPhone 18 Pro", "512GB"):     254800,
+    ("iPhone 18 Pro", "1TB"):       324800,
+    ("iPhone 18 Pro", "2TB"):       429800,
+    # iPhone 17 (2025-09 発売)
     ("iPhone 17 Pro Max", "256GB"): 194800,
     ("iPhone 17 Pro Max", "512GB"): 229800,
     ("iPhone 17 Pro Max", "1TB"):   264800,
@@ -50,8 +60,16 @@ LIST_PRICES = {
 def normalize_model(text):
     t = text.replace("　", " ")
     t = re.sub(r"\s+", " ", t)
-    # ProMax / Pro Max
-    if re.search(r"17\s*Pro\s*Max", t, re.I) or "ProMax" in t.replace(" ", ""):
+    compact = t.replace(" ", "")
+    # iPhone 18 系（先に判定・ProMax同時マッチ回避）
+    if re.search(r"18\s*Pro\s*Max", t, re.I) or "18ProMax" in compact:
+        return "iPhone 18 Pro Max"
+    if re.search(r"18\s*Pro", t, re.I):
+        return "iPhone 18 Pro"
+    if re.search(r"iPhone\s*18", t, re.I):
+        return "iPhone 18"
+    # iPhone 17 系
+    if re.search(r"17\s*Pro\s*Max", t, re.I) or "17ProMax" in compact:
         return "iPhone 17 Pro Max"
     if re.search(r"17\s*Pro", t, re.I):
         return "iPhone 17 Pro"
@@ -77,6 +95,9 @@ def normalize_color(text):
         "セージ": "セージ", "ラベンダー": "ラベンダー",
         "スカイブルー": "スカイブルー", "クラウドホワイト": "クラウドホワイト",
         "ライトゴールド": "ライトゴールド", "スペースブラック": "スペースブラック",
+        # iPhone 18 新色
+        "グレイシャー": "グレイシャー",
+        "バーガンディ": "バーガンディ",
     }
     for k, v in colors.items():
         if k in text:
@@ -90,6 +111,8 @@ def to_int(price_str):
 
 # ============ 1) ルデヤ ============
 RUDEYA_URLS = {
+    "iPhone 18 Pro Max": "https://kaitori-rudeya.com/category/detail/253",
+    "iPhone 18 Pro":     "https://kaitori-rudeya.com/category/detail/254",
     "iPhone 17 Pro Max": "https://kaitori-rudeya.com/category/detail/220",
     "iPhone 17 Pro":     "https://kaitori-rudeya.com/category/detail/219",
 }
@@ -135,12 +158,21 @@ def fetch_rudeya():
 # ============ 2) 森森買取 ============
 def fetch_morimori():
     results = []
-    url = "https://www.morimori-kaitori.jp/search/iphone17?page=1&price-list=true"
+    urls = [
+        "https://www.morimori-kaitori.jp/search/iphone18?page=1&price-list=true",
+        "https://www.morimori-kaitori.jp/search/iphone17?page=1&price-list=true",
+    ]
+    rows_html = []
+    for url in urls:
+        try:
+            r = requests.get(url, headers=UA, timeout=TIMEOUT)
+            r.raise_for_status()
+            soup = BeautifulSoup(r.text, "lxml")
+            rows_html.extend(soup.select("table.price-list tr"))
+        except Exception as e:
+            print(f"[森森] {url} 取得失敗: {e}")
     try:
-        r = requests.get(url, headers=UA, timeout=TIMEOUT)
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, "lxml")
-        for row in soup.select("table.price-list tr"):
+        for row in rows_html:
             cells = [c.get_text(" ", strip=True) for c in row.find_all(["td", "th"])]
             if len(cells) < 7:
                 continue
@@ -209,6 +241,8 @@ def fetch_kaiei():
 # ============ 集計 ============
 # 取得対象を限定(機種, 容量)
 TARGETS = {
+    ("iPhone 18 Pro Max", "256GB"),
+    ("iPhone 18 Pro", "256GB"),
     ("iPhone 17 Pro Max", "256GB"),
     ("iPhone 17 Pro", "256GB"),
 }
@@ -278,8 +312,9 @@ def build_dataset(all_rows):
         })
 
     # モデル→容量の表示順
-    model_order = {"iPhone 17 Pro Max": 0, "iPhone 17 Pro": 1, "iPhone Air": 2,
-                   "iPhone 17": 3, "iPhone 17e": 4}
+    model_order = {"iPhone 18 Pro Max": 0, "iPhone 18 Pro": 1,
+                   "iPhone 17 Pro Max": 2, "iPhone 17 Pro": 3,
+                   "iPhone Air": 4, "iPhone 17": 5, "iPhone 17e": 6}
     cap_order = {"256GB": 0, "512GB": 1, "1TB": 2, "2TB": 3, "128GB": -1}
     items.sort(key=lambda x: (model_order.get(x["model"], 9),
                               cap_order.get(x["capacity"], 9)))

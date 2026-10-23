@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>iPhone 買取価格比較</title>
+<title>買取価格比較</title>
 <style>
   :root{
     --bg:#0a0a0b; --card:#16161a; --card2:#1d1d22; --line:#2a2a30;
@@ -93,6 +93,30 @@
   .cbest{font-size:16px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;margin-left:auto;margin-right:10px}
   .cshop{font-size:12px;color:var(--sub);min-width:46px;text-align:right}
 
+  /* 郵送の警告 */
+  .mail{display:inline-block;margin-top:8px;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;
+    color:#f87171;background:#f8717114;border:1px solid #f8717155}
+  .mail-after{font-size:12px;color:var(--sub);margin-top:5px}
+  .mail-after b{color:var(--text)}
+  .mail-main{margin:0 20px 14px;padding:11px 13px;border-radius:12px;background:#f8717112;border:1px solid #f8717144;font-size:13px;line-height:1.6}
+  .mail-main b{color:var(--red)}
+  /* 表示切替 */
+  .views{display:flex;gap:8px;padding:2px 20px 12px}
+  .view{flex:1;text-align:center;padding:10px 0;border-radius:12px;background:var(--card);border:1px solid var(--line);
+    color:var(--sub);font-size:14px;font-weight:700;cursor:pointer}
+  .view.on{background:var(--card2);color:var(--gold);border-color:var(--gold-dim)}
+  /* ポケカ */
+  .pk-head{margin:0 16px 12px;font-size:15px;font-weight:700}
+  .pk-sum{margin:0 16px 14px;border-radius:16px;padding:16px;background:radial-gradient(120% 120% at 0% 0%,#211d12 0%,#16161a 55%);border:1px solid #3a3320}
+  .pk-sum .l{font-size:12px;color:var(--gold-dim)} .pk-sum .v{font-size:34px;font-weight:800;color:var(--gold);margin-top:4px}
+  .pk-sum .s{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
+  .pk-sum .s b{color:var(--red)}
+  .pk-card{margin:0 16px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+  .pk-name{font-size:14px;font-weight:700}
+  .pk-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px}
+  .pk-row .n{color:var(--sub)} .pk-row .p{font-weight:800;font-variant-numeric:tabular-nums}
+  .pk-row .p.best{color:var(--gold)} .pk-row .p.na{color:#55555c;font-weight:600}
+  .pk-note{margin-top:8px;font-size:11px;color:var(--sub);line-height:1.5}
   .err{padding:40px 24px;text-align:center;color:var(--sub);font-size:14px;line-height:1.7}
   .err code{background:var(--card2);padding:2px 7px;border-radius:5px;color:var(--gold);font-size:12px}
 </style>
@@ -101,7 +125,7 @@
   <div class="head">
     <div class="kicker">LIVE BUYBACK PRICES</div>
     <div class="title-row">
-      <div class="title">iPhone 買取価格比較</div>
+      <div class="title">買取価格比較</div>
       <button id="refresh" class="refresh">再読込</button>
     </div>
     <div class="updated"><span class="dot"></span><span id="updated">読み込み中…</span></div>
@@ -113,7 +137,7 @@
 const SHOP_COLORS = { "ルデヤ":"#e8c87a", "森森":"#7dd3fc" };
 const yen = n => n==null ? "—" : "¥"+n.toLocaleString();
 
-let DATA=null, HIST=null, selModel=null, selCap=null;
+let DATA=null, HIST=null, selModel=null, selCap=null, VIEW="iphone";
 
 async function load(keepSel){
   try{
@@ -142,7 +166,58 @@ function models(){ return [...new Set(DATA.items.map(i=>i.model))]; }
 function capsOf(m){ return DATA.items.filter(i=>i.model===m).map(i=>i.capacity); }
 function current(){ return DATA.items.find(i=>i.model===selModel && i.capacity===selCap); }
 
+function viewsHtml(){
+  return `<div class="views">
+    <div class="view ${VIEW==='iphone'?'on':''}" data-v="iphone">iPhone</div>
+    ${DATA.pokemon?`<div class="view ${VIEW==='pokemon'?'on':''}" data-v="pokemon">ポケカ 30th</div>`:``}
+  </div>`;
+}
+function bindViews(app){
+  app.querySelectorAll(".view").forEach(v=>v.onclick=()=>{ VIEW=v.dataset.v; render(); });
+}
+
+function mailBadge(info){
+  if(!info || !info.mail_deduct) return "";
+  return `<div class="mail">郵送買取 −${yen(info.mail_deduct)}</div>
+          <div class="mail-after">郵送なら <b>${yen(info.mail_price)}</b></div>`;
+}
+function mailBestHtml(it){
+  const si = it.shop_info||{}; const arr = Object.entries(si).filter(([s,i])=>i.mail_deduct);
+  if(!arr.length) return "";
+  // 郵送で送った場合の最高値(減額がない店は店頭価格のまま)
+  const eff = Object.entries(si).map(([s,i])=>[s, i.mail_deduct? i.mail_price : i.price]);
+  const top = eff.sort((a,b)=>b[1]-a[1])[0];
+  return `<div class="mail-main">⚠️ <b>郵送で売ると減額</b>があります。<br>
+    ${arr.map(([s,i])=>`${s}：−${yen(i.mail_deduct)}（${yen(i.price)} → ${yen(i.mail_price)}）`).join("<br>")}<br>
+    郵送の場合の最高値：<b style="color:var(--gold)">${yen(top[1])}</b>（${top[0]}）</div>`;
+}
+
+function renderPokemon(){
+  const app = document.getElementById("app"), pk = DATA.pokemon;
+  const diffSealed = pk.set9_sealed ? pk.set9_sealed.price - pk.total_best : null;
+  app.innerHTML = viewsHtml() + `
+    <div class="pk-sum">
+      <div class="l">${pk.title}</div>
+      <div class="v">${yen(pk.total_best)}</div>
+      <div class="s">9種を1つずつ最高値で売った合計（ルデヤ合計 ${yen(pk.total_rudeya)}）<br>
+      ${pk.set9_sealed?`参考：ダンボール未開封の9種セットなら <b style="color:var(--text)">${yen(pk.set9_sealed.price)}</b>（ルデヤ）。
+      バラ売りとの差は <b>−${yen(diffSealed)}</b><br>`:``}
+      ⚠️ 新品未開封・シュリンク付きのみ。箱潰れ・傷みは減額、または着払いで返送。</div>
+    </div>
+    ${pk.items.map(i=>`<div class="pk-card">
+      <div class="pk-name">${i.name}</div>
+      ${["ルデヤ","森森"].map(s=>{ const v=i.shops[s]; const best=v!=null&&v===i.best_price;
+        return `<div class="pk-row"><span class="n">${s}</span>
+          <span class="p ${v==null?'na':(best?'best':'')}">${v==null?'取扱なし':yen(v)}</span></div>`; }).join("")}
+      ${Object.entries(i.notes||{}).map(([s,n])=>`<div class="pk-note">⚠️ ${s}：${n}</div>`).join("")}
+    </div>`).join("")}
+  `;
+  bindViews(app);
+}
+
 function render(){
+  if(VIEW==="pokemon" && DATA.pokemon) return renderPokemon();
+  VIEW="iphone";
   const it = current();
   const app = document.getElementById("app");
   const shops = ["ルデヤ","森森"];
@@ -155,7 +230,7 @@ function render(){
     diffHtml = sign+"¥"+Math.abs(it.diff).toLocaleString();
   }
 
-  app.innerHTML = `
+  app.innerHTML = viewsHtml() + `
     <div class="tabs">
       ${models().map(m=>`<div class="tab ${m===selModel?'on':''}" data-m="${m}">${m.replace('iPhone ','')}</div>`).join("")}
     </div>
@@ -181,6 +256,8 @@ function render(){
       </div>
     </div>
 
+    ${mailBestHtml(it)}
+
     <div class="shops">
       ${(()=>{ let crowned=false; return shops.map(s=>{
         const v=it.shops[s]; const isBest = v!=null && v===it.best_price && !crowned;
@@ -189,6 +266,7 @@ function render(){
           <div class="nm">${s}</div>
           ${v!=null?`<div class="pr">${yen(v)}</div>`:`<div class="na">取扱なし</div>`}
           ${isBest?`<div class="crown">★ 最高値</div>`:``}
+          ${mailBadge((it.shop_info||{})[s])}
         </div>`;
       }).join(""); })()}
     </div>
@@ -206,6 +284,7 @@ function render(){
     render();
   });
   app.querySelectorAll(".cap").forEach(c=>c.onclick=()=>{ selCap=c.dataset.c; render(); });
+  bindViews(app);
 }
 
 const COLOR_DOTS = {

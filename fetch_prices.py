@@ -113,6 +113,11 @@ def normalize_color(text):
             return v
     return ""
 
+def parse_mail_deduct(text):
+    """「郵送買取 -20,000円」「(郵送は-20,000円)」から郵送時の減額(円)を取り出す。無ければ None"""
+    m = re.search(r"郵送[^\d\-－−]{0,6}[\-－−]\s*([\d,]+)\s*円", text or "")
+    return int(m.group(1).replace(",", "")) if m else None
+
 def to_int(price_str):
     digits = re.sub(r"[^\d]", "", price_str)
     return int(digits) if digits else None
@@ -153,12 +158,16 @@ def fetch_rudeya():
                 price = to_int(price_txt)
                 if not price or price < 10000:
                     continue
+                memo_el = card.select_one("span.product-card-memo")
+                memo = memo_el.get_text(" ", strip=True) if memo_el else ""
                 results.append({
                     "shop": "ルデヤ",
                     "model": model,
                     "capacity": cap,
                     "color": color,
                     "price": price,
+                    "memo": memo,
+                    "mail_deduct": parse_mail_deduct(memo),
                 })
         except Exception as e:
             print(f"[ルデヤ] {model} 取得失敗: {e}")
@@ -206,6 +215,8 @@ def fetch_morimori():
                 "capacity": cap,
                 "color": normalize_color(name),
                 "price": price,
+                "memo": "",
+                "mail_deduct": parse_mail_deduct(name),
             })
     except Exception as e:
         print(f"[森森] 取得失敗: {e}")
@@ -249,6 +260,89 @@ def fetch_kaiei():
     return results
 
 
+# ============ 4) ポケカ 30th CELEBRATION（手元にあるもの） ============
+POKEMON_RUDEYA_URL = "https://kaitori-rudeya.com/category/detail/114"
+POKEMON_MORIMORI_URLS = [
+    "https://www.morimori-kaitori.jp/search/30th?page=1&price-list=true",
+]
+# 手元にある当選品(シュリンク付き・単品)。他(BOX等)を追加したい時はここに名前の一部を足す。
+POKEMON_OWNED = ["フシギダネ・ヒトカゲ・ゼニガメ", "チコリータ・ヒノアラシ・ワニノコ",
+                 "キモリ・アチャモ・ミズゴロウ", "ナエトル・ヒコザル・ポッチャマ",
+                 "ツタージャ・ポカブ・ミジュマル", "ハリマロン・フォッコ・ケロマツ",
+                 "モクロー・ニャビー・アシマリ", "サルノリ・ヒバニー・メッソン",
+                 "ニャオハ・ホゲータ・クワッス"]
+POKEMON_SET9_KEY = "カードセット 9種セット"   # 参考表示(ダンボール未開封ならこの価格)
+
+def fetch_pokemon_rows():
+    """30th CELEBRATION 関連の買取行を店別に返す: [{shop,name,price,memo}]"""
+    rows = []
+    try:
+        r = requests.get(POKEMON_RUDEYA_URL, headers=UA, timeout=TIMEOUT)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "lxml")
+        seen = set()
+        for card in soup.select("article.pgrid-card"):
+            name_el = card.select_one("a.product-card-name-link")
+            price_el = card.select_one("span.product-card-price-value")
+            if not name_el or not price_el:
+                continue
+            name = re.sub(r"\s+", " ", name_el.get_text(" ", strip=True))
+            if "30th" not in name:
+                continue
+            if name in seen:      # ページ内に同じ商品が2回出る
+                continue
+            seen.add(name)
+            memo_el = card.select_one("span.product-card-memo")
+            rows.append({"shop": "ルデヤ", "name": name, "price": to_int(price_el.get_text(" ", strip=True)),
+                         "memo": memo_el.get_text(" ", strip=True) if memo_el else ""})
+    except Exception as e:
+        print(f"[ルデヤ ポケカ] 取得失敗: {e}")
+    for url in POKEMON_MORIMORI_URLS:
+        try:
+            r = requests.get(url, headers=UA, timeout=TIMEOUT)
+            r.raise_for_status()
+            soup = BeautifulSoup(r.text, "lxml")
+            for tr in soup.select("table.price-list tr"):
+                cells = [c.get_text(" ", strip=True) for c in tr.find_all(["td", "th"])]
+                if len(cells) < 7:
+                    continue
+                name = re.sub(r"\s+", " ", cells[4])
+                if "ポケモンカード" not in name or "30th" not in name:
+                    continue
+                price = to_int(cells[6])
+                if price:
+                    rows.append({"shop": "森森", "name": name, "price": price, "memo": ""})
+        except Exception as e:
+            print(f"[森森 ポケカ] {url} 取得失敗: {e}")
+    return rows
+
+def build_pokemon(rows):
+    """手元にある9種を1つずつ並べ、店別の価格・注意書き・合計を返す"""
+    items = []
+    for key in POKEMON_OWNED:
+        shops, notes = {}, {}
+        for r in rows:
+            if key in r["name"] and "カードセット" in r["name"]:
+                shops[r["shop"]] = r["price"]
+                if r["memo"]:
+                    notes[r["shop"]] = r["memo"]
+        prices = {k: v for k, v in shops.items() if v}
+        best = max(prices.values()) if prices else None
+        best_shop = [k for k, v in prices.items() if v == best][0] if best else None
+        items.append({"name": key, "shops": {"ルデヤ": shops.get("ルデヤ"), "森森": shops.get("森森")},
+                      "best_price": best, "best_shop": best_shop, "notes": notes})
+    total = sum(i["best_price"] or 0 for i in items)
+    total_rudeya = sum(i["shops"]["ルデヤ"] or 0 for i in items)
+    set9 = next((r for r in rows if r["shop"] == "ルデヤ" and POKEMON_SET9_KEY in r["name"]), None)
+    return {
+        "title": "ポケカ 30th CELEBRATION カードセット（手元の9種）",
+        "items": items,
+        "total_best": total,
+        "total_rudeya": total_rudeya,
+        "set9_sealed": ({"price": set9["price"], "memo": set9["memo"]} if set9 else None),
+    }
+
+
 # ============ 集計 ============
 # 取得対象を限定(機種, 容量)
 TARGETS = {
@@ -266,6 +360,7 @@ def build_dataset(all_rows):
     """
     grouped = {}
     color_grouped = {}   # (model, capacity, color) -> {shop: price}
+    best_rows = {}       # (model, capacity) -> {shop: 最高値の行}  (郵送減額・注意書き用)
     for row in all_rows:
         key = (row["model"], row["capacity"])
         if key not in TARGETS:
@@ -275,6 +370,7 @@ def build_dataset(all_rows):
         cur = grouped[key][shop]
         if cur is None or row["price"] > cur:
             grouped[key][shop] = row["price"]
+            best_rows.setdefault(key, {})[shop] = row
         # ---- カラー別 ----
         color = (row.get("color") or "").strip() or "（色指定なし）"
         ckey = (row["model"], row["capacity"], color)
@@ -312,10 +408,22 @@ def build_dataset(all_rows):
             })
         colors.sort(key=lambda x: -(x["best_price"] or 0))
 
+        # ---- 店ごとの郵送時の減額・注意書き ----
+        shop_info = {}
+        for sname, brow in best_rows.get((model, cap), {}).items():
+            ded = brow.get("mail_deduct")
+            shop_info[sname] = {
+                "price": brow["price"],
+                "mail_deduct": ded,
+                "mail_price": (brow["price"] - ded) if ded else None,
+                "memo": brow.get("memo") or "",
+            }
+
         items.append({
             "model": model,
             "capacity": cap,
             "list_price": list_price,
+            "shop_info": shop_info,   # {"ルデヤ":{price,mail_deduct,mail_price,memo},...}
             "shops": shops,           # {"ルデヤ":x,"森森":y,"海映":z}
             "best_price": best,
             "best_shop": best_shop,
@@ -362,10 +470,25 @@ def main():
         except Exception:
             pass
 
+    try:
+        pokemon = build_pokemon(fetch_pokemon_rows())
+        if not any(i["best_price"] for i in pokemon["items"]):
+            raise ValueError("ポケカ価格が0件")
+    except Exception as e:
+        print(f"[ポケカ] 取得失敗→前回値を保持: {e}")
+        pokemon = None
+        if os.path.exists(prices_path):
+            try:
+                with open(prices_path, encoding="utf-8") as f:
+                    pokemon = json.load(f).get("pokemon")
+            except Exception:
+                pass
+
     dataset = {
         "updated_at": ts,
         "source": ["ルデヤ", "森森"],
         "items": items,
+        "pokemon": pokemon,
     }
     if stale:
         dataset["stale"] = True

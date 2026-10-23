@@ -343,10 +343,15 @@ function renderChart(it){
       <div style="padding:24px 4px;color:var(--sub);font-size:13px;text-align:center">
       履歴がまだ十分にありません。毎日 <code style="color:var(--gold)">fetch_prices.py</code> を実行すると推移が蓄積されます。</div></div>`;
   }
-  const W=480, H=200, padL=46, padR=12, padT=14, padB=26;
+  const W=480, H=200, padL=72, padR=12, padT=14, padB=26;
   const shops=["ルデヤ","森森"];
+  // 縦軸は「利益額」= 郵送の買取価格(郵送減額を引いた額) − Apple定価。定価が無い機種は買取価格のまま。
+  const base = it.list_price||0;
+  const si = it.shop_info||{};
+  const profit = (r,s)=> r[s]==null ? null : (r[s] - ((si[s]||{}).mail_deduct||0) - base);
+  const fmt = v => (base ? (v>=0?"+":"−") : "") + "¥" + Math.abs(Math.round(v)).toLocaleString();
   const all=[];
-  recs.forEach(r=>shops.forEach(s=>{ if(r[s]!=null) all.push(r[s]); }));
+  recs.forEach(r=>shops.forEach(s=>{ const v=profit(r,s); if(v!=null) all.push(v); }));
   let min=Math.min(...all), max=Math.max(...all);
   const span=(max-min)||1; min-=span*0.12; max+=span*0.12;
   const x=i=> padL + (W-padL-padR)*(i/(recs.length-1));
@@ -357,7 +362,7 @@ function renderChart(it){
   for(let g=0;g<=3;g++){
     const val=min+(max-min)*g/3, yy=y(val);
     grid+=`<line class="gl" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>
-      <text class="axis-y" x="${padL-6}" y="${yy+3}" text-anchor="end">${Math.round(val/1000)}k</text>`;
+      <text class="axis-y" x="${padL-6}" y="${yy+3}" text-anchor="end">${fmt(val)}</text>`;
   }
   // X軸ラベル(両端+中央)
   let xlab="";
@@ -368,25 +373,31 @@ function renderChart(it){
   // 各店ライン
   let lines="";
   shops.forEach(s=>{
-    const pts=recs.map((r,i)=> r[s]!=null?`${x(i)},${y(r[s])}`:null).filter(Boolean);
+    const pts=recs.map((r,i)=> profit(r,s)!=null?`${x(i)},${y(profit(r,s))}`:null).filter(Boolean);
     if(pts.length<2) return;
     lines+=`<polyline fill="none" stroke="${SHOP_COLORS[s]}" stroke-width="2"
        stroke-linejoin="round" stroke-linecap="round" points="${pts.join(" ")}" opacity="0.95"/>`;
     // 最終点
     const last=recs[recs.length-1];
-    if(last[s]!=null) lines+=`<circle cx="${x(recs.length-1)}" cy="${y(last[s])}" r="3" fill="${SHOP_COLORS[s]}"/>`;
+    if(profit(last,s)!=null) lines+=`<circle cx="${x(recs.length-1)}" cy="${y(profit(last,s))}" r="3" fill="${SHOP_COLORS[s]}"/>`;
   });
+
+  let zero="";
+  if(base && min<0 && max>0){ const zy=y(0);
+    zero=`<line x1="${padL}" y1="${zy}" x2="${W-padR}" y2="${zy}" stroke="#8a8a92" stroke-width="1" stroke-dasharray="4 3"/>
+      <text class="axis-x" x="${W-padR}" y="${zy-4}" text-anchor="end" fill="#8a8a92">定価 ±0</text>`; }
 
   return `<div class="chart-wrap">
     <div class="chart-head">
-      <div class="chart-title">買取価格の推移（店頭・${recs.length}日）</div>
+      <div class="chart-title">利益額の推移（${recs.length}日）</div>
       <div class="legend">
         ${shops.map(s=>`<span><i style="background:${SHOP_COLORS[s]}"></i>${s}</span>`).join("")}
       </div>
     </div>
     <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
-      ${grid}${lines}${xlab}
+      ${grid}${zero}${lines}${xlab}
     </svg>
+    <div style="font-size:11px;color:var(--sub);padding:6px 4px 2px;line-height:1.5">利益額 ＝ 買取価格（郵送減額を引いた額）− Apple定価。※過去分にも現在の郵送減額を当てています。</div>
   </div>`;
 }
 

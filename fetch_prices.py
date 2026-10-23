@@ -32,6 +32,11 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 # ===== Apple 定価(税込・SIMフリー) =====
 # キー: (model, capacity)
 LIST_PRICES = {
+    # iPhone Duo (2026-10-23 発売・Apple Store 税込)
+    ("iPhone Duo", "256GB"):        364800,
+    ("iPhone Duo", "512GB"):        399800,
+    ("iPhone Duo", "1TB"):          469800,
+    ("iPhone Duo", "2TB"):          574800,
     # iPhone 18 (2026-09-18 発売)
     ("iPhone 18 Pro Max", "256GB"): 239800,
     ("iPhone 18 Pro Max", "512GB"): 274800,
@@ -61,6 +66,9 @@ def normalize_model(text):
     t = text.replace("　", " ")
     t = re.sub(r"\s+", " ", t)
     compact = t.replace(" ", "")
+    # iPhone Duo（折りたたみ・最初に判定）
+    if re.search(r"iPhone\s*Duo", t, re.I):
+        return "iPhone Duo"
     # iPhone 18 系（先に判定・ProMax同時マッチ回避）
     if re.search(r"18\s*Pro\s*Max", t, re.I) or "18ProMax" in compact:
         return "iPhone 18 Pro Max"
@@ -88,6 +96,7 @@ def normalize_capacity(text):
 def normalize_color(text):
     # カラー表記を統一
     colors = {
+        "スターホワイト": "スターホワイト", "ナイトスカイ": "ナイトスカイ",   # 長い名前を先に判定
         "シルバー": "シルバー", "銀": "シルバー",
         "ディープブルー": "ディープブルー", "青": "ディープブルー",
         "コズミックオレンジ": "コズミックオレンジ", "橙": "コズミックオレンジ", "オレンジ": "コズミックオレンジ",
@@ -111,6 +120,7 @@ def to_int(price_str):
 
 # ============ 1) ルデヤ ============
 RUDEYA_URLS = {
+    "iPhone Duo":        "https://kaitori-rudeya.com/category/detail/255",
     "iPhone 18 Pro Max": "https://kaitori-rudeya.com/category/detail/253",
     "iPhone 18 Pro":     "https://kaitori-rudeya.com/category/detail/254",
     "iPhone 17 Pro Max": "https://kaitori-rudeya.com/category/detail/220",
@@ -159,6 +169,7 @@ def fetch_rudeya():
 def fetch_morimori():
     results = []
     urls = [
+        "https://www.morimori-kaitori.jp/search/iPhone%20Duo?page=1&price-list=true",
         "https://www.morimori-kaitori.jp/search/iphone18?page=1&price-list=true",
         "https://www.morimori-kaitori.jp/search/iphone17?page=1&price-list=true",
     ]
@@ -241,6 +252,7 @@ def fetch_kaiei():
 # ============ 集計 ============
 # 取得対象を限定(機種, 容量)
 TARGETS = {
+    ("iPhone Duo", "256GB"),
     ("iPhone 18 Pro Max", "256GB"),
     ("iPhone 18 Pro", "256GB"),
     ("iPhone 17 Pro Max", "256GB"),
@@ -312,7 +324,7 @@ def build_dataset(all_rows):
         })
 
     # モデル→容量の表示順
-    model_order = {"iPhone 18 Pro Max": 0, "iPhone 18 Pro": 1,
+    model_order = {"iPhone Duo": -1, "iPhone 18 Pro Max": 0, "iPhone 18 Pro": 1,
                    "iPhone 17 Pro Max": 2, "iPhone 17 Pro": 3,
                    "iPhone Air": 4, "iPhone 17": 5, "iPhone 17e": 6}
     cap_order = {"256GB": 0, "512GB": 1, "1TB": 2, "2TB": 3, "128GB": -1}

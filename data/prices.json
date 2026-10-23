@@ -1,10 +1,44 @@
 {
-  "updated_at": "2026-10-24 02:49",
+  "updated_at": "2026-10-24 07:35",
   "source": [
     "ルデヤ",
     "森森"
   ],
   "items": [
+    {
+      "model": "iPhone Duo",
+      "capacity": "256GB",
+      "list_price": 364800,
+      "shops": {
+        "ルデヤ": 403500,
+        "森森": 407000
+      },
+      "best_price": 407000,
+      "best_shop": "森森",
+      "diff": 42200,
+      "colors": [
+        {
+          "color": "スターホワイト",
+          "shops": {
+            "ルデヤ": 403500,
+            "森森": 407000
+          },
+          "best_price": 407000,
+          "best_shop": "森森",
+          "diff": 42200
+        },
+        {
+          "color": "ナイトスカイ",
+          "shops": {
+            "ルデヤ": 403500,
+            "森森": 407000
+          },
+          "best_price": 407000,
+          "best_shop": "森森",
+          "diff": 42200
+        }
+      ]
+    },
     {
       "model": "iPhone 18 Pro Max",
       "capacity": "256GB",

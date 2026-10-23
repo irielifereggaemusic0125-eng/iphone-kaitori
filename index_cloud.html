@@ -176,10 +176,23 @@ function bindViews(app){
   app.querySelectorAll(".view").forEach(v=>v.onclick=()=>{ VIEW=v.dataset.v; render(); });
 }
 
+// 郵送で売った場合の金額(減額が無い店は店頭と同額)
+function effPrice(info){ if(!info||info.price==null) return null; return info.mail_deduct ? info.mail_price : info.price; }
+function effShops(it){
+  const si=it.shop_info||{}, out={};
+  ["ルデヤ","森森"].forEach(s=>{ out[s]= si[s]? effPrice(si[s]) : (it.shops[s]!=null? it.shops[s] : null); });
+  return out;
+}
+function effBest(it){
+  const e=effShops(it); let best=null, shop=null;
+  Object.entries(e).forEach(([s,v])=>{ if(v!=null && (best==null||v>best)){best=v;shop=s;} });
+  return {price:best, shop};
+}
+
 function mailBadge(info){
   if(!info || !info.mail_deduct) return "";
-  return `<div class="mail">郵送買取 −${yen(info.mail_deduct)}</div>
-          <div class="mail-after">郵送なら <b>${yen(info.mail_price)}</b></div>`;
+  return `<div class="mail">郵送 −${yen(info.mail_deduct)} 反映済み</div>
+          <div class="mail-after">店頭・持込 ${yen(info.price)}</div>`;
 }
 function mailBestHtml(it){
   const si = it.shop_info||{}; const arr = Object.entries(si).filter(([s,i])=>i.mail_deduct);
@@ -187,9 +200,8 @@ function mailBestHtml(it){
   // 郵送で送った場合の最高値(減額がない店は店頭価格のまま)
   const eff = Object.entries(si).map(([s,i])=>[s, i.mail_deduct? i.mail_price : i.price]);
   const top = eff.sort((a,b)=>b[1]-a[1])[0];
-  return `<div class="mail-main">⚠️ <b>郵送で売ると減額</b>があります。<br>
-    ${arr.map(([s,i])=>`${s}：−${yen(i.mail_deduct)}（${yen(i.price)} → ${yen(i.mail_price)}）`).join("<br>")}<br>
-    郵送の場合の最高値：<b style="color:var(--gold)">${yen(top[1])}</b>（${top[0]}）</div>`;
+  return `<div class="mail-main">⚠️ 表示金額は<b>郵送買取</b>の金額です（郵送減額を引いた額）。<br>
+    ${arr.map(([s,i])=>`${s}：店頭 ${yen(i.price)} → 郵送 ${yen(i.mail_price)}（−${yen(i.mail_deduct)}）`).join("<br>")}</div>`;
 }
 
 function renderPokemon(){
@@ -222,13 +234,17 @@ function render(){
   const app = document.getElementById("app");
   const shops = ["ルデヤ","森森"];
 
-  // diff 表示
+  // 郵送ベースの最高値・定価差額
+  const EB = effBest(it);
+  const effDiff = (EB.price!=null && it.list_price) ? EB.price - it.list_price : null;
   let diffHtml = "—", diffCls="";
-  if(it.diff!=null){
-    const sign = it.diff>=0 ? "+" : "−";
-    diffCls = it.diff>=0 ? "plus":"minus";
-    diffHtml = sign+"¥"+Math.abs(it.diff).toLocaleString();
+  if(effDiff!=null){
+    const sign = effDiff>=0 ? "+" : "−";
+    diffCls = effDiff>=0 ? "plus":"minus";
+    diffHtml = sign+"¥"+Math.abs(effDiff).toLocaleString();
   }
+  const storeBest = it.best_price;
+  const hasMail = Object.values(it.shop_info||{}).some(i=>i.mail_deduct);
 
   app.innerHTML = viewsHtml() + `
     <div class="tabs">
@@ -245,22 +261,22 @@ function render(){
       </div>
       <div class="best-row">
         <div>
-          <div class="best-label">最高買取価格</div>
-          <div class="best-val">${yen(it.best_price)}</div>
-          <div class="best-shop">by <b>${it.best_shop||"—"}</b></div>
+          <div class="best-label">最高買取価格（郵送）</div>
+          <div class="best-val">${yen(EB.price)}</div>
+          <div class="best-shop">by <b>${EB.shop||"—"}</b>${hasMail&&storeBest!==EB.price?`　<span style="color:var(--sub)">店頭・持込なら ${yen(storeBest)}</span>`:``}</div>
         </div>
       </div>
       <div class="metrics">
         <div class="metric"><div class="l">Apple 定価(税込)</div><div class="v">${yen(it.list_price)}</div></div>
-        <div class="metric"><div class="l">定価との差額</div><div class="v ${diffCls}">${diffHtml}</div></div>
+        <div class="metric"><div class="l">定価との差額（郵送）</div><div class="v ${diffCls}">${diffHtml}</div></div>
       </div>
     </div>
 
     ${mailBestHtml(it)}
 
     <div class="shops">
-      ${(()=>{ let crowned=false; return shops.map(s=>{
-        const v=it.shops[s]; const isBest = v!=null && v===it.best_price && !crowned;
+      ${(()=>{ let crowned=false; const E=effShops(it); return shops.map(s=>{
+        const v=E[s]; const isBest = v!=null && v===EB.price && !crowned;
         if(isBest) crowned=true;
         return `<div class="shop ${isBest?'best':''}">
           <div class="nm">${s}</div>
@@ -294,7 +310,16 @@ const COLOR_DOTS = {
   "ライトゴールド":"#e8d8a8","スペースブラック":"#2a2a2e"
 };
 function renderColors(it){
-  const cols = (it.colors||[]).filter(c=>c.best_price!=null);
+  const si = it.shop_info||{};
+  const cols = (it.colors||[]).map(c=>{
+    let best=null, shop=null;
+    Object.entries(c.shops||{}).forEach(([s,v])=>{
+      if(v==null) return;
+      const e = v - ((si[s]||{}).mail_deduct||0);
+      if(best==null||e>best){best=e;shop=s;}
+    });
+    return Object.assign({}, c, {best_price:best, best_shop:shop});
+  }).filter(c=>c.best_price!=null).sort((a,b)=>b.best_price-a.best_price);
   if(!cols.length) return "";
   const rows = cols.map(c=>{
     const dot = COLOR_DOTS[c.color] || "#666";
@@ -305,7 +330,7 @@ function renderColors(it){
     </div>`;
   }).join("");
   return `<div class="colors-wrap">
-    <div class="colors-head">カラー別 最高買取価格</div>
+    <div class="colors-head">カラー別 最高買取価格（郵送）</div>
     ${rows}
   </div>`;
 }
@@ -354,7 +379,7 @@ function renderChart(it){
 
   return `<div class="chart-wrap">
     <div class="chart-head">
-      <div class="chart-title">買取価格の推移（${recs.length}日）</div>
+      <div class="chart-title">買取価格の推移（店頭・${recs.length}日）</div>
       <div class="legend">
         ${shops.map(s=>`<span><i style="background:${SHOP_COLORS[s]}"></i>${s}</span>`).join("")}
       </div>

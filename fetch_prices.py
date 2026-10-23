@@ -371,6 +371,21 @@ def build_pokemon(rows):
     }
 
 
+import time
+
+def with_retry(fetch_fn, label, tries=3, wait=25):
+    """行が0件(=ブロック/一時失敗)なら少し待って再試行する。最後の結果を返す"""
+    rows = []
+    for n in range(1, tries + 1):
+        rows = fetch_fn()
+        if rows:
+            return rows
+        print(f"[{label}] 0件 → 再試行 {n}/{tries}")
+        if n < tries:
+            time.sleep(wait)
+    return rows
+
+
 # ============ 集計 ============
 # 取得対象を限定(機種, 容量)
 TARGETS = {
@@ -477,8 +492,9 @@ def main():
 
     print(f"=== 取得開始 {ts} ===")
     rows = []
-    rows += fetch_rudeya();   print(f"ルデヤ: {len([r for r in rows if r['shop']=='ルデヤ'])}件")
-    rows += fetch_morimori(); print(f"森森:   {len([r for r in rows if r['shop']=='森森'])}件")
+    rows += with_retry(fetch_rudeya, "ルデヤ");   print(f"ルデヤ: {len([r for r in rows if r['shop']=='ルデヤ'])}件")
+    rows += with_retry(fetch_morimori, "森森"); print(f"森森:   {len([r for r in rows if r['shop']=='森森'])}件")
+    failed_shops = [sh for sh in ("ルデヤ", "森森") if not any(r["shop"] == sh for r in rows)]
 
     items = build_dataset(rows)
 
@@ -487,19 +503,25 @@ def main():
     # その場合に空itemsで上書きデプロイすると表示アプリが死ぬため、既存の前回データを保持する。
     prices_path = os.path.join(DATA_DIR, "prices.json")
     stale = False
-    if not items and os.path.exists(prices_path):
+    if (not items or failed_shops) and os.path.exists(prices_path):
         try:
             with open(prices_path, encoding="utf-8") as f:
                 prev = json.load(f)
             if prev.get("items"):
                 items = prev["items"]
                 stale = True
-                print(f"⚠️ 今回0件 → 前回データ({prev.get('updated_at')}・{len(items)}機種)を保持")
+                print(f"⚠️ 取得失敗({'・'.join(failed_shops) or '全店'}) → 前回データ({prev.get('updated_at')}・{len(items)}機種)を保持")
         except Exception:
             pass
 
     try:
-        pokemon = build_pokemon(fetch_pokemon_rows())
+        def _pk_rows():   # ルデヤ+森森の両方が取れた時だけ採用(片方だけなら失敗扱いで再試行)
+            rr = fetch_pokemon_rows()
+            return rr if {"ルデヤ", "森森"} <= {r["shop"] for r in rr} else []
+        prow = with_retry(_pk_rows, "ポケカ", tries=2, wait=20)
+        if not prow:
+            raise ValueError("ポケカ 片方の店が0件")
+        pokemon = build_pokemon(prow)
         if not any(i["best_price"] for i in pokemon["items"]):
             raise ValueError("ポケカ価格が0件")
     except Exception as e:
@@ -520,7 +542,7 @@ def main():
     }
     if stale:
         dataset["stale"] = True
-        dataset["note"] = "今回の取得が0件のため前回データを表示中"
+        dataset["note"] = ("今回「" + "・".join(failed_shops) + "」の取得に失敗したため前回データを表示中") if failed_shops else "今回の取得が0件のため前回データを表示中"
     with open(prices_path, "w", encoding="utf-8") as f:
         json.dump(dataset, f, ensure_ascii=False, indent=2)
 

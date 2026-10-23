@@ -206,21 +206,27 @@ function mailBestHtml(it){
 
 function renderPokemon(){
   const app = document.getElementById("app"), pk = DATA.pokemon;
-  const diffSealed = pk.set9_sealed ? pk.set9_sealed.price - pk.total_best : null;
+  const setsBest = pk.sets_total_best!=null ? pk.sets_total_best : pk.total_best;
+  const diffSealed = pk.set9_sealed ? pk.set9_sealed.price - setsBest : null;
+  const boxes = pk.items.filter(i=>i.group==="box");
   app.innerHTML = viewsHtml() + `
     <div class="pk-sum">
       <div class="l">${pk.title}</div>
       <div class="v">${yen(pk.total_best)}</div>
-      <div class="s">9種を1つずつ最高値で売った合計（ルデヤ合計 ${yen(pk.total_rudeya)}）<br>
+      <div class="s">カードセット9種＋BOXを、それぞれ最高値で売った合計<br>
+      ・カードセット9種：${yen(setsBest)}（ルデヤ合計 ${yen(pk.sets_total_rudeya!=null?pk.sets_total_rudeya:pk.total_rudeya)}）<br>
+      ${boxes.map(b=>`・${b.name}：${yen(b.best_price)}${b.best_shop?`（${b.best_shop}）`:``}`).join("<br>")}${boxes.length?"<br>":""}
       ${pk.set9_sealed?`参考：ダンボール未開封の9種セットなら <b style="color:var(--text)">${yen(pk.set9_sealed.price)}</b>（ルデヤ）。
       バラ売りとの差は <b>−${yen(diffSealed)}</b><br>`:``}
       ⚠️ 新品未開封・シュリンク付きのみ。箱潰れ・傷みは減額、または着払いで返送。</div>
     </div>
     ${pk.items.map(i=>`<div class="pk-card">
-      <div class="pk-name">${i.name}</div>
+      <div class="pk-name">${i.group==="box"?"📦 ":""}${i.name}</div>
       ${["ルデヤ","森森"].map(s=>{ const v=i.shops[s]; const best=v!=null&&v===i.best_price;
         return `<div class="pk-row"><span class="n">${s}</span>
           <span class="p ${v==null?'na':(best?'best':'')}">${v==null?'取扱なし':yen(v)}</span></div>`; }).join("")}
+      ${i.cost?`<div class="pk-row"><span class="n">購入額</span><span class="p">${yen(i.cost)}</span></div>
+        <div class="pk-row"><span class="n">利益（最高値−購入額）</span><span class="p ${i.profit>=0?'best':''}" style="${i.profit<0?'color:var(--red)':''}">${i.profit>=0?'+':'−'}${yen(Math.abs(i.profit))}</span></div>`:``}
       ${Object.entries(i.notes||{}).map(([s,n])=>`<div class="pk-note">⚠️ ${s}：${n}</div>`).join("")}
     </div>`).join("")}
   `;

@@ -264,13 +264,20 @@ def fetch_kaiei():
 POKEMON_RUDEYA_URL = "https://kaitori-rudeya.com/category/detail/114"
 POKEMON_MORIMORI_URLS = [
     "https://www.morimori-kaitori.jp/search/30th?page=1&price-list=true",
+    "https://www.morimori-kaitori.jp/search/%E3%82%B9%E3%83%88%E3%83%BC%E3%83%A0%E3%82%A8%E3%83%A1%E3%83%A9%E3%83%AB%E3%83%80?page=1&price-list=true",
 ]
+POKEMON_KEYWORDS = ("30th", "ストームエメラルダ")   # 取得対象にする商品名の目印
 # 手元にある当選品(シュリンク付き・単品)。他(BOX等)を追加したい時はここに名前の一部を足す。
 POKEMON_OWNED = ["フシギダネ・ヒトカゲ・ゼニガメ", "チコリータ・ヒノアラシ・ワニノコ",
                  "キモリ・アチャモ・ミズゴロウ", "ナエトル・ヒコザル・ポッチャマ",
                  "ツタージャ・ポカブ・ミジュマル", "ハリマロン・フォッコ・ケロマツ",
                  "モクロー・ニャビー・アシマリ", "サルノリ・ヒバニー・メッソン",
                  "ニャオハ・ホゲータ・クワッス"]
+# 手元のBOX: name=表示名 / must=商品名に必要な語 / cost=購入額(円・不明ならNone)
+POKEMON_BOXES = [
+    {"name": "30th CELEBRATION BOX", "must": ["30th CELEBRATION BOX", "拡張パック"], "cost": None},
+    {"name": "ストームエメラルダ BOX", "must": ["ストームエメラルダ", "BOX"], "cost": 6000},
+]
 POKEMON_SET9_KEY = "カードセット 9種セット"   # 参考表示(ダンボール未開封ならこの価格)
 
 def fetch_pokemon_rows():
@@ -287,7 +294,7 @@ def fetch_pokemon_rows():
             if not name_el or not price_el:
                 continue
             name = re.sub(r"\s+", " ", name_el.get_text(" ", strip=True))
-            if "30th" not in name:
+            if not any(k in name for k in POKEMON_KEYWORDS):
                 continue
             if name in seen:      # ページ内に同じ商品が2回出る
                 continue
@@ -307,7 +314,7 @@ def fetch_pokemon_rows():
                 if len(cells) < 7:
                     continue
                 name = re.sub(r"\s+", " ", cells[4])
-                if "ポケモンカード" not in name or "30th" not in name:
+                if "ポケモンカード" not in name or not any(k in name for k in POKEMON_KEYWORDS):
                     continue
                 price = to_int(cells[6])
                 if price:
@@ -331,14 +338,35 @@ def build_pokemon(rows):
         best_shop = [k for k, v in prices.items() if v == best][0] if best else None
         items.append({"name": key, "shops": {"ルデヤ": shops.get("ルデヤ"), "森森": shops.get("森森")},
                       "best_price": best, "best_shop": best_shop, "notes": notes})
+    for it in items:
+        it["group"] = "set"
+    sets_total = sum(i["best_price"] or 0 for i in items)
+    sets_total_rudeya = sum(i["shops"]["ルデヤ"] or 0 for i in items)
+    for b in POKEMON_BOXES:
+        shops, notes = {}, {}
+        for r in rows:
+            if all(m in r["name"] for m in b["must"]) and "FUTURISTIC" not in r["name"]:
+                shops[r["shop"]] = r["price"]
+                if r["memo"]:
+                    notes[r["shop"]] = r["memo"]
+        prices = {k: v for k, v in shops.items() if v}
+        best = max(prices.values()) if prices else None
+        best_shop = [k for k, v in prices.items() if v == best][0] if best else None
+        items.append({"name": b["name"], "group": "box",
+                      "shops": {"ルデヤ": shops.get("ルデヤ"), "森森": shops.get("森森")},
+                      "best_price": best, "best_shop": best_shop, "notes": notes,
+                      "cost": b["cost"],
+                      "profit": (best - b["cost"]) if (best and b["cost"]) else None})
     total = sum(i["best_price"] or 0 for i in items)
     total_rudeya = sum(i["shops"]["ルデヤ"] or 0 for i in items)
     set9 = next((r for r in rows if r["shop"] == "ルデヤ" and POKEMON_SET9_KEY in r["name"]), None)
     return {
-        "title": "ポケカ 30th CELEBRATION カードセット（手元の9種）",
+        "title": "ポケカ（手元の分）",
         "items": items,
         "total_best": total,
         "total_rudeya": total_rudeya,
+        "sets_total_best": sets_total,
+        "sets_total_rudeya": sets_total_rudeya,
         "set9_sealed": ({"price": set9["price"], "memo": set9["memo"]} if set9 else None),
     }
 

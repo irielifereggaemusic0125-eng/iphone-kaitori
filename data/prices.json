@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-25 16:59",
+  "updated_at": "2026-10-25 22:38",
   "source": [
     "ルデヤ",
     "森森"
@@ -65,7 +65,7 @@
           "memo": "郵送買取 +500円"
         },
         "森森": {
-          "price": 236500,
+          "price": 238000,
           "mail_deduct": null,
           "mail_price": null,
           "memo": ""
@@ -73,21 +73,21 @@
       },
       "shops": {
         "ルデヤ": 236500,
-        "森森": 236500
+        "森森": 238000
       },
-      "best_price": 236500,
-      "best_shop": "ルデヤ",
-      "diff": -3300,
+      "best_price": 238000,
+      "best_shop": "森森",
+      "diff": -1800,
       "colors": [
         {
           "color": "バーガンディ",
           "shops": {
             "ルデヤ": 236500,
-            "森森": 236500
+            "森森": 238000
           },
-          "best_price": 236500,
-          "best_shop": "ルデヤ",
-          "diff": -3300
+          "best_price": 238000,
+          "best_shop": "森森",
+          "diff": -1800
         },
         {
           "color": "グレイシャー",

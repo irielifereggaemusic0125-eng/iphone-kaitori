@@ -150,6 +150,9 @@ def fetch_rudeya():
                 cond = (cond_el.get_text(strip=True) if cond_el else "")
                 if "新品" not in cond and "未開封" not in txt:
                     continue
+                # 「お申込一時停止中」でも価格は表示されたままなので除外する
+                if card.select_one("span.product-card-stopped"):
+                    continue
                 cap = normalize_capacity(txt)
                 if not cap:
                     continue
@@ -300,8 +303,12 @@ def fetch_pokemon_rows():
                 continue
             seen.add(name)
             memo_el = card.select_one("span.product-card-memo")
-            rows.append({"shop": "ルデヤ", "name": name, "price": to_int(price_el.get_text(" ", strip=True)),
-                         "memo": memo_el.get_text(" ", strip=True) if memo_el else ""})
+            memo = memo_el.get_text(" ", strip=True) if memo_el else ""
+            price = to_int(price_el.get_text(" ", strip=True))
+            # 「お申込一時停止中」でも価格は表示されたままなので、価格なし扱いにして注意書きに残す
+            if card.select_one("span.product-card-stopped"):
+                price, memo = None, ("お申込一時停止中 " + memo).strip()
+            rows.append({"shop": "ルデヤ", "name": name, "price": price, "memo": memo})
     except Exception as e:
         print(f"[ルデヤ ポケカ] 取得失敗: {e}")
     for url in POKEMON_MORIMORI_URLS:
@@ -359,7 +366,7 @@ def build_pokemon(rows):
                       "profit": (best - b["cost"]) if (best and b["cost"]) else None})
     total = sum(i["best_price"] or 0 for i in items)
     total_rudeya = sum(i["shops"]["ルデヤ"] or 0 for i in items)
-    set9 = next((r for r in rows if r["shop"] == "ルデヤ" and POKEMON_SET9_KEY in r["name"]), None)
+    set9 = next((r for r in rows if r["shop"] == "ルデヤ" and POKEMON_SET9_KEY in r["name"] and r["price"]), None)
     return {
         "title": "ポケカ（手元の分）",
         "items": items,
@@ -501,9 +508,11 @@ def main():
     # ----- 0件フェイルセーフ -----
     # CI(GitHub Actions)環境では買取サイトがdatacenter IPをブロックし全shop 0件になることがある。
     # その場合に空itemsで上書きデプロイすると表示アプリが死ぬため、既存の前回データを保持する。
+    # 一部の店だけ失敗した時は、取れた店の最新値で出す(失敗した店は空欄)。
+    # 以前は1店でも失敗すると全店を前回値のまま止めていて、森森の失敗(10/26〜)でルデヤまで10/25の値で止まった。
     prices_path = os.path.join(DATA_DIR, "prices.json")
     stale = False
-    if (not items or failed_shops) and os.path.exists(prices_path):
+    if not items and os.path.exists(prices_path):
         try:
             with open(prices_path, encoding="utf-8") as f:
                 prev = json.load(f)
@@ -515,12 +524,12 @@ def main():
             pass
 
     try:
-        def _pk_rows():   # ルデヤ+森森の両方が取れた時だけ採用(片方だけなら失敗扱いで再試行)
-            rr = fetch_pokemon_rows()
-            return rr if {"ルデヤ", "森森"} <= {r["shop"] for r in rr} else []
-        prow = with_retry(_pk_rows, "ポケカ", tries=2, wait=20)
+        prow = with_retry(fetch_pokemon_rows, "ポケカ", tries=2, wait=20)
         if not prow:
-            raise ValueError("ポケカ 片方の店が0件")
+            raise ValueError("ポケカ 全店0件")
+        pk_failed = [sh for sh in ("ルデヤ", "森森") if not any(r["shop"] == sh for r in prow)]
+        if pk_failed:
+            print(f"[ポケカ] {'・'.join(pk_failed)} は取得失敗→空欄で出力")
         pokemon = build_pokemon(prow)
         if not any(i["best_price"] for i in pokemon["items"]):
             raise ValueError("ポケカ価格が0件")
@@ -542,7 +551,9 @@ def main():
     }
     if stale:
         dataset["stale"] = True
-        dataset["note"] = ("今回「" + "・".join(failed_shops) + "」の取得に失敗したため前回データを表示中") if failed_shops else "今回の取得が0件のため前回データを表示中"
+        dataset["note"] = "今回の取得が0件のため前回データを表示中"
+    elif failed_shops:
+        dataset["note"] = "今回「" + "・".join(failed_shops) + "」の取得に失敗したため、その店は空欄です"
     with open(prices_path, "w", encoding="utf-8") as f:
         json.dump(dataset, f, ensure_ascii=False, indent=2)
 

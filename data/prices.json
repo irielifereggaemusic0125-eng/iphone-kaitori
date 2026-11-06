@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-06 11:00",
+  "updated_at": "2026-11-06 19:13",
   "source": [
     "ルデヤ",
     "森森"
@@ -11,39 +11,39 @@
       "list_price": 364800,
       "shop_info": {
         "ルデヤ": {
-          "price": 372000,
+          "price": 372500,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 372000,
+        "ルデヤ": 372500,
         "森森": null
       },
-      "best_price": 372000,
+      "best_price": 372500,
       "best_shop": "ルデヤ",
-      "diff": 7200,
+      "diff": 7700,
       "colors": [
         {
           "color": "ナイトスカイ",
           "shops": {
-            "ルデヤ": 372000,
+            "ルデヤ": 372500,
             "森森": null
           },
-          "best_price": 372000,
+          "best_price": 372500,
           "best_shop": "ルデヤ",
-          "diff": 7200
+          "diff": 7700
         },
         {
           "color": "スターホワイト",
           "shops": {
-            "ルデヤ": 371000,
+            "ルデヤ": 371500,
             "森森": null
           },
-          "best_price": 371000,
+          "best_price": 371500,
           "best_shop": "ルデヤ",
-          "diff": 6200
+          "diff": 6700
         }
       ]
     },
@@ -53,22 +53,32 @@
       "list_price": 239800,
       "shop_info": {
         "ルデヤ": {
-          "price": 228000,
+          "price": 230500,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 228000,
+        "ルデヤ": 230500,
         "森森": null
       },
-      "best_price": 228000,
+      "best_price": 230500,
       "best_shop": "ルデヤ",
-      "diff": -11800,
+      "diff": -9300,
       "colors": [
         {
           "color": "バーガンディ",
+          "shops": {
+            "ルデヤ": 230500,
+            "森森": null
+          },
+          "best_price": 230500,
+          "best_shop": "ルデヤ",
+          "diff": -9300
+        },
+        {
+          "color": "グレイシャー",
           "shops": {
             "ルデヤ": 228000,
             "森森": null
@@ -78,7 +88,7 @@
           "diff": -11800
         },
         {
-          "color": "グレイシャー",
+          "color": "ブラック",
           "shops": {
             "ルデヤ": 225000,
             "森森": null
@@ -88,24 +98,14 @@
           "diff": -14800
         },
         {
-          "color": "ブラック",
-          "shops": {
-            "ルデヤ": 223000,
-            "森森": null
-          },
-          "best_price": 223000,
-          "best_shop": "ルデヤ",
-          "diff": -16800
-        },
-        {
           "color": "シルバー",
           "shops": {
-            "ルデヤ": 221000,
+            "ルデヤ": 224000,
             "森森": null
           },
-          "best_price": 221000,
+          "best_price": 224000,
           "best_shop": "ルデヤ",
-          "diff": -18800
+          "diff": -15800
         }
       ]
     },
@@ -115,59 +115,59 @@
       "list_price": 219800,
       "shop_info": {
         "ルデヤ": {
-          "price": 200000,
+          "price": 201500,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 200000,
+        "ルデヤ": 201500,
         "森森": null
       },
-      "best_price": 200000,
+      "best_price": 201500,
       "best_shop": "ルデヤ",
-      "diff": -19800,
+      "diff": -18300,
       "colors": [
         {
           "color": "バーガンディ",
           "shops": {
-            "ルデヤ": 200000,
+            "ルデヤ": 201500,
             "森森": null
           },
-          "best_price": 200000,
+          "best_price": 201500,
           "best_shop": "ルデヤ",
-          "diff": -19800
+          "diff": -18300
         },
         {
           "color": "グレイシャー",
           "shops": {
-            "ルデヤ": 196500,
+            "ルデヤ": 198500,
             "森森": null
           },
-          "best_price": 196500,
+          "best_price": 198500,
           "best_shop": "ルデヤ",
-          "diff": -23300
+          "diff": -21300
         },
         {
           "color": "ブラック",
           "shops": {
-            "ルデヤ": 196500,
+            "ルデヤ": 198500,
             "森森": null
           },
-          "best_price": 196500,
+          "best_price": 198500,
           "best_shop": "ルデヤ",
-          "diff": -23300
+          "diff": -21300
         },
         {
           "color": "シルバー",
           "shops": {
-            "ルデヤ": 192000,
+            "ルデヤ": 193500,
             "森森": null
           },
-          "best_price": 192000,
+          "best_price": 193500,
           "best_shop": "ルデヤ",
-          "diff": -27800
+          "diff": -26300
         }
       ]
     },

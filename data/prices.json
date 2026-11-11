@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-11 10:43",
+  "updated_at": "2026-11-11 19:08",
   "source": [
     "ルデヤ",
     "森森"
@@ -11,29 +11,29 @@
       "list_price": 364800,
       "shop_info": {
         "ルデヤ": {
-          "price": 373000,
+          "price": 371500,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 373000,
+        "ルデヤ": 371500,
         "森森": null
       },
-      "best_price": 373000,
+      "best_price": 371500,
       "best_shop": "ルデヤ",
-      "diff": 8200,
+      "diff": 6700,
       "colors": [
         {
           "color": "ナイトスカイ",
           "shops": {
-            "ルデヤ": 373000,
+            "ルデヤ": 371500,
             "森森": null
           },
-          "best_price": 373000,
+          "best_price": 371500,
           "best_shop": "ルデヤ",
-          "diff": 8200
+          "diff": 6700
         },
         {
           "color": "スターホワイト",
@@ -162,12 +162,12 @@
         {
           "color": "シルバー",
           "shops": {
-            "ルデヤ": 194500,
+            "ルデヤ": 196500,
             "森森": null
           },
-          "best_price": 194500,
+          "best_price": 196500,
           "best_shop": "ルデヤ",
-          "diff": -25300
+          "diff": -23300
         }
       ]
     },
@@ -177,29 +177,29 @@
       "list_price": 194800,
       "shop_info": {
         "ルデヤ": {
-          "price": 190500,
+          "price": 191000,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +300円"
         }
       },
       "shops": {
-        "ルデヤ": 190500,
+        "ルデヤ": 191000,
         "森森": null
       },
-      "best_price": 190500,
+      "best_price": 191000,
       "best_shop": "ルデヤ",
-      "diff": -4300,
+      "diff": -3800,
       "colors": [
         {
           "color": "シルバー",
           "shops": {
-            "ルデヤ": 190500,
+            "ルデヤ": 191000,
             "森森": null
           },
-          "best_price": 190500,
+          "best_price": 191000,
           "best_shop": "ルデヤ",
-          "diff": -4300
+          "diff": -3800
         },
         {
           "color": "ディープブルー",

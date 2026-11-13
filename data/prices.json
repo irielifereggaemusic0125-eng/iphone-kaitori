@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-13 05:44",
+  "updated_at": "2026-11-13 11:26",
   "source": [
     "ルデヤ",
     "森森"
@@ -11,39 +11,39 @@
       "list_price": 364800,
       "shop_info": {
         "ルデヤ": {
-          "price": 371500,
+          "price": 365500,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 371500,
+        "ルデヤ": 365500,
         "森森": null
       },
-      "best_price": 371500,
+      "best_price": 365500,
       "best_shop": "ルデヤ",
-      "diff": 6700,
+      "diff": 700,
       "colors": [
         {
           "color": "ナイトスカイ",
           "shops": {
-            "ルデヤ": 371500,
+            "ルデヤ": 365500,
             "森森": null
           },
-          "best_price": 371500,
+          "best_price": 365500,
           "best_shop": "ルデヤ",
-          "diff": 6700
+          "diff": 700
         },
         {
           "color": "スターホワイト",
           "shops": {
-            "ルデヤ": 366500,
+            "ルデヤ": 365500,
             "森森": null
           },
-          "best_price": 366500,
+          "best_price": 365500,
           "best_shop": "ルデヤ",
-          "diff": 1700
+          "diff": 700
         }
       ]
     },
@@ -53,29 +53,29 @@
       "list_price": 239800,
       "shop_info": {
         "ルデヤ": {
-          "price": 231000,
+          "price": 230000,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 231000,
+        "ルデヤ": 230000,
         "森森": null
       },
-      "best_price": 231000,
+      "best_price": 230000,
       "best_shop": "ルデヤ",
-      "diff": -8800,
+      "diff": -9800,
       "colors": [
         {
           "color": "グレイシャー",
           "shops": {
-            "ルデヤ": 231000,
+            "ルデヤ": 230000,
             "森森": null
           },
-          "best_price": 231000,
+          "best_price": 230000,
           "best_shop": "ルデヤ",
-          "diff": -8800
+          "diff": -9800
         },
         {
           "color": "バーガンディ",

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-19 11:56",
+  "updated_at": "2026-11-19 19:59",
   "source": [
     "ルデヤ",
     "森森"
@@ -38,12 +38,12 @@
         {
           "color": "スターホワイト",
           "shops": {
-            "ルデヤ": 358000,
+            "ルデヤ": 355500,
             "森森": null
           },
-          "best_price": 358000,
+          "best_price": 355500,
           "best_shop": "ルデヤ",
-          "diff": -6800
+          "diff": -9300
         }
       ]
     },
@@ -53,29 +53,29 @@
       "list_price": 239800,
       "shop_info": {
         "ルデヤ": {
-          "price": 227000,
+          "price": 226000,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 227000,
+        "ルデヤ": 226000,
         "森森": null
       },
-      "best_price": 227000,
+      "best_price": 226000,
       "best_shop": "ルデヤ",
-      "diff": -12800,
+      "diff": -13800,
       "colors": [
         {
           "color": "バーガンディ",
           "shops": {
-            "ルデヤ": 227000,
+            "ルデヤ": 226000,
             "森森": null
           },
-          "best_price": 227000,
+          "best_price": 226000,
           "best_shop": "ルデヤ",
-          "diff": -12800
+          "diff": -13800
         },
         {
           "color": "グレイシャー",

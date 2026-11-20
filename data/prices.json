@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-20 19:48",
+  "updated_at": "2026-11-21 02:39",
   "source": [
     "ルデヤ",
     "森森"
@@ -400,13 +400,13 @@
         "name": "30th CELEBRATION BOX",
         "group": "box",
         "shops": {
-          "ルデヤ": null,
+          "ルデヤ": 14000,
           "森森": null
         },
-        "best_price": null,
-        "best_shop": null,
+        "best_price": 14000,
+        "best_shop": "ルデヤ",
         "notes": {
-          "ルデヤ": "お申込一時停止中 新品未開封/シュリンク付きのみの買取となります。 箱潰れや痛み具合によって減額又は着払いにて返送となります。 シュリンクが切れているものは買取不可"
+          "ルデヤ": "新品未開封/シュリンク付きのみの買取となります。 箱潰れや痛み具合によって減額又は着払いにて返送となります。 シュリンクが切れているものは買取不可"
         },
         "cost": null,
         "profit": null
@@ -427,8 +427,8 @@
         "profit": 500
       }
     ],
-    "total_best": 6500,
-    "total_rudeya": 6500,
+    "total_best": 20500,
+    "total_rudeya": 20500,
     "sets_total_best": 0,
     "sets_total_rudeya": 0,
     "set9_sealed": {

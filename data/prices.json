@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-27 12:57",
+  "updated_at": "2026-11-27 20:39",
   "source": [
     "ルデヤ",
     "森森"
@@ -53,39 +53,39 @@
       "list_price": 239800,
       "shop_info": {
         "ルデヤ": {
-          "price": 226000,
+          "price": 227000,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 226000,
+        "ルデヤ": 227000,
         "森森": null
       },
-      "best_price": 226000,
+      "best_price": 227000,
       "best_shop": "ルデヤ",
-      "diff": -13800,
+      "diff": -12800,
       "colors": [
         {
           "color": "バーガンディ",
           "shops": {
-            "ルデヤ": 226000,
+            "ルデヤ": 227000,
             "森森": null
           },
-          "best_price": 226000,
+          "best_price": 227000,
           "best_shop": "ルデヤ",
-          "diff": -13800
+          "diff": -12800
         },
         {
           "color": "グレイシャー",
           "shops": {
-            "ルデヤ": 224000,
+            "ルデヤ": 225500,
             "森森": null
           },
-          "best_price": 224000,
+          "best_price": 225500,
           "best_shop": "ルデヤ",
-          "diff": -15800
+          "diff": -14300
         },
         {
           "color": "ブラック",
@@ -115,29 +115,29 @@
       "list_price": 219800,
       "shop_info": {
         "ルデヤ": {
-          "price": 208500,
+          "price": 209500,
           "mail_deduct": null,
           "mail_price": null,
           "memo": "郵送買取 +500円"
         }
       },
       "shops": {
-        "ルデヤ": 208500,
+        "ルデヤ": 209500,
         "森森": null
       },
-      "best_price": 208500,
+      "best_price": 209500,
       "best_shop": "ルデヤ",
-      "diff": -11300,
+      "diff": -10300,
       "colors": [
         {
           "color": "バーガンディ",
           "shops": {
-            "ルデヤ": 208500,
+            "ルデヤ": 209500,
             "森森": null
           },
-          "best_price": 208500,
+          "best_price": 209500,
           "best_shop": "ルデヤ",
-          "diff": -11300
+          "diff": -10300
         },
         {
           "color": "グレイシャー",
